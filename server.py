@@ -54,8 +54,10 @@ def run_server():
 
     print('Server is running...')
 
-    client_socket, client_address = server_socket.accept()
-    handle_request(client_socket)
+    # Бесконечный цикл для прослушивания подключений
+    while True:
+        client_socket, client_address = server_socket.accept()
+        handle_request(client_socket)
 
 
 run_server()
