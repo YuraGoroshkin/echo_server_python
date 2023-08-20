@@ -52,7 +52,7 @@ def run_server():
     server_socket.bind(('localhost', 8787))
     server_socket.listen(1)
 
-    print('Server is running...')
+    print('Server is running....')
 
     client_socket, client_address = server_socket.accept()
     handle_request(client_socket)
