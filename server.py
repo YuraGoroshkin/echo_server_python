@@ -17,20 +17,45 @@ def handle_request(client_socket):
         client_socket.close()
         return
 
-    def run_server():
-        # Создаем сокет
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Получаем значение статуса из GET параметра 'status'
+    status = 'OK'
+    status_code = '200 '
+    if '/?status=' in request:
+        status_code = request.split('/?status=')[1].split()[0]
+        try:
+            status = http.client.responses[int(status_code)]
+        except KeyError:
+            # Если указан невалидный статус, возвращаем ошибку 400 Bad Request
+            response = 'HTTP/1.1 400 Bad Request\r\n\r\n'
+            client_socket.send(response.encode())
+            client_socket.close()
+            return
 
-        # Устанавливаем опцию SO_REUSEADDR, чтобы можно было повторно использовать адрес сервера
-        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #  ответ сервера
+    response = f'HTTP/1.1 {status_code} {status}\r\n'
+    for header in headers:
+        response += header + '\r\n'
+    response += '\r\n'
 
-        # Привязываем серверный сокет к адресу и порту
-        server_socket.bind(('localhost', 8787))
-        server_socket.listen(1)
+    # Отправляем ответ
+    client_socket.send(response.encode())
 
-        print('Server is running...')
 
-        client_socket, client_address = server_socket.accept()
-        handle_request(client_socket)
+def run_server():
+    # Создаем сокет
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    run_server()
+    # Устанавливаем опцию SO_REUSEADDR, чтобы можно было повторно использовать адрес сервера
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    # Привязываем серверный сокет к адресу и порту
+    server_socket.bind(('localhost', 8787))
+    server_socket.listen(1)
+
+    print('Server is running...')
+
+    client_socket, client_address = server_socket.accept()
+    handle_request(client_socket)
+
+
+run_server()
